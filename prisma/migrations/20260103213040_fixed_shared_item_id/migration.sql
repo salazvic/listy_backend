@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "ItemList" ALTER COLUMN "purchasedAt" SET DEFAULT CURRENT_TIMESTAMP;

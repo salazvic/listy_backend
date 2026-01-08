@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String       @id @default(uuid())
+  name      String
+  email     String       @unique
+  password  String
+  refreshToken String?
+
+  // Relaciones
+  lists     List[]       @relation("OwnerLists")
+  shared    SharedList[]
+  purchases ItemList[]  @relation("PurchasedBy")
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model List {
+  id        String       @id @default(uuid())
+  name      String
+
+  ownerId  String
+  owner    User         @relation("OwnerLists", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  items     ItemList[]
+  shared    SharedList[]
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Item {
+  id        String      @id @default(uuid())
+  name      String      @unique 
+  imageUrl     String?
+  imagePublicId String?
+
+  lists     ItemList[]
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model ItemList {
+  id             String    @id @default(uuid())
+
+  listId         String
+  itemId         String
+
+  quantity       Int       @default(1)
+  price          Decimal?  @db.Decimal(10,2)
+
+  purchased      Boolean   @default(false)
+  purchasedById  String?
+  purchasedAt    DateTime? @default(now())
+
+  // Relaciones
+  list            List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  item            Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  purchasedBy     User?    @relation("PurchasedBy", fields: [purchasedById], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([listId, itemId])
+}
+
+model SharedList {
+  id        String     @id @default(uuid())
+
+  listId    String
+  userId    String
+  role      Role
+
+  // Relaciones
+  list      List       @relation(fields: [listId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime   @default(now())
+
+  @@unique([listId, userId])
+}
+
+enum Role {
+  owner
+  editor
+  viewer
+}
