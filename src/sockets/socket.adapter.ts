@@ -6,8 +6,9 @@ export class SocketAdapter extends IoAdapter {
     const server = super.createIOServer(port, {
       ...options,
       cors: {
-        origin: true,
+        origin: process.env.ORIGIN,
         credentials: true,
+        methods: ["GET", "POST"]
       },
     });
 

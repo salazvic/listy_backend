@@ -7,7 +7,10 @@ import { Socket } from "socket.io";
 
 @WebSocketGateway({
   namespace: '/ws/items_lists',
-  cors: {origin: true, credentials: true}
+  cors: {
+    origin: process.env.ORIGIN, 
+    credentials: true
+  }
 })
 export class ItemsListsGateway extends BaseGateway{
   constructor(logger: PinoLogger, jwtService: JwtService) {

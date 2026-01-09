@@ -7,7 +7,10 @@ import { JwtService } from "@nestjs/jwt";
 
 @WebSocketGateway({
   namespace: '/ws/lists',
-  cors: {origin: true, credentials: true},
+  cors: {
+    origin: process.env.ORIGIN,
+    credentials: true
+  },
 })
 export class ListsGateway extends BaseGateway {
   constructor(logger: PinoLogger, jwtService: JwtService) {

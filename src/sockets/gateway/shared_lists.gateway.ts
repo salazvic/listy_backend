@@ -7,7 +7,10 @@ import { Socket } from "socket.io";
 
 @WebSocketGateway({
   namespace: '/ws/shared_list',
-  cors: {origin: true, credentials: true}
+  cors: {
+    origin: process.env.ORIGIN,
+    credentials: true
+  }
 })
 export class SharedListGateway extends BaseGateway {
   constructor(logger: PinoLogger, jwtService: JwtService) {
