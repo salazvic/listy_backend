@@ -35,7 +35,7 @@ async function bootstrap() {
   const prisma = app.get(PrismaService);
   await prisma.$connect();
 
-  await app.listen(process.env.PORT ?? 3001);
+  await app.listen(process.env.PORT || 3001);
 
   console.log(`Application is running on: ${process.env.PORT}`);
 
