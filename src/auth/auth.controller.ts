@@ -33,15 +33,15 @@ export class AuthController {
 
     res.cookie('access_token', data.access.access_token, {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: false,
+      sameSite: 'none',
+      secure: true,
       maxAge: 15 * 60 *  1000
     })
 
     res.cookie('refresh_token', data.access.refresh_token, {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: false,
+      sameSite: 'none',
+      secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
@@ -93,8 +93,8 @@ export class AuthController {
 
     res.cookie('access_token', newAccess, {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: false
+      sameSite: 'none',
+      secure: true
     })
 
     return { ok: true }
