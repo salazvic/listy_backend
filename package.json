@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate --config=./prisma.config.ts",
     "build": "nest build",
     "start": "node dist/main.js",
     "start:prod": "nest start --watch",
@@ -23,7 +23,7 @@
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
     "build:check": "ls -la dist || echo 'no dist'",
     "migrate": "prisma migrate deploy",
-    "prisma:deploy": "prisma generate && prisma migrate deploy"
+    "prisma:deploy": "prisma generate --config=./prisma.config.ts && prisma migrate deploy --config=./prisma.config.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
