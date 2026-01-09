@@ -21,7 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "schema": "prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
-    "build:check": "ls -la dist || echo 'no dist'"
+    "build:check": "ls -la dist || echo 'no dist'",
+    "migrate": "prisma migrate deploy"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
