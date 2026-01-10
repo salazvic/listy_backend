@@ -23,8 +23,8 @@ async function bootstrap() {
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
   })
-  app.useWebSocketAdapter(new SocketAdapter(app))
   app.use(cookieParser());
+  app.useWebSocketAdapter(new SocketAdapter(app))
 
   process.on('uncaughtException', (err) => {
     console.log('UNCAUGHT EXCEPTION', err)
