@@ -47,7 +47,6 @@ const isProd = process.env.NODE_ENV === 'production'
       maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
-    console.log(data)
     return data
   }
 
@@ -106,6 +105,7 @@ const isProd = process.env.NODE_ENV === 'production'
   @Get('me')
   async me(@Req() req) {
     const user = req.user
+    console.log("[AUTH][ME] user:", user)
     if (!user) {
       throw new UnauthorizedException
     }
