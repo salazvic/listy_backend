@@ -109,7 +109,9 @@ const isProd = process.env.NODE_ENV === 'production'
     if (!user) {
       throw new UnauthorizedException
     }
-    return this.authService.getMe(user.sub)
+    const respBack = await this.authService.getMe(user.sub)
+    console.log("resp back:", respBack)
+    return respBack
   }
 
   /* @Post('invite')
