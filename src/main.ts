@@ -34,12 +34,22 @@ async function bootstrap() {
   })
   
   const prisma = app.get(PrismaService);
+
+try {
   await prisma.$connect();
+  console.log("Prisma conectado a la base OK");
 
-  await app.listen(port, (() => {
-    console.log('Server on ' + port)
-  }));
+  await prisma.$queryRaw`SELECT 1`;
+  console.log("DB responde correctamente");
 
+} catch (err) {
+  console.error("Error conectando a la base:", err);
+  process.exit(1);
+}
+
+await app.listen(port, (() => {
   console.log(`Application is running on: ${process.env.PORT}`);
+}));
+
 }
 bootstrap();

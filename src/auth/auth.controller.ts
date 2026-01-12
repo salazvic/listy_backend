@@ -30,21 +30,24 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ) {
     const data = await this.authService.login(dto.email, dto.password);
+console.log("@Respuesta login:", data)
+const isProd = process.env.NODE_ENV === 'production'
 
     res.cookie('access_token', data.access.access_token, {
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: isProd ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production',
       maxAge: 24 * 60 * 60 *  1000
     })
 
     res.cookie('refresh_token', data.access.refresh_token, {
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: isProd ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
+    console.log(data)
     return data
   }
 
