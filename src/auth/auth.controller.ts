@@ -82,6 +82,7 @@ export class AuthController {
   @Public()
   @Post('refresh')
   refresh(@Req() req, @Res({ passthrough: true }) res) {
+    console.log('Cookies:', req.cookies)
     const refreshToken = req.cookies.refresh_token
     if (!refreshToken) throw new UnauthorizedException()
 
@@ -106,8 +107,8 @@ export class AuthController {
 
   @Get('me')
   async me(@Req() req) {
+    console.log('Cookies:', req.cookies)
     const user = req.user
-    console.log("[AUTH][ME] user:", user)
     if (!user) {
       throw new UnauthorizedException
     }
