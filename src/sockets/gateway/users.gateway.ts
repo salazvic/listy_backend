@@ -59,4 +59,4 @@ export class UsersGateway extends BaseGateway {
     this.emitToUsers(members, Events.SHARED_ADDED, payload)
   }
 
-}
+} 
