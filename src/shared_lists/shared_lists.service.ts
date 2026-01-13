@@ -49,7 +49,6 @@ export class sharedListService {
       where: {listId: listId},
       select: {userId: true}
     })
-console.log("miembros:", members)
     const userIds = [
       list?.ownerId,
       ...members.map(m => m.userId)

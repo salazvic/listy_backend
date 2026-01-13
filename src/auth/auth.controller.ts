@@ -34,16 +34,16 @@ export class AuthController {
 
     res.cookie('access_token', data.access.access_token, {
       httpOnly: true,
-      sameSite: isProd ? 'none' : 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      secure: isProd,
       maxAge: 24 * 60 * 60 *  1000,
       path: '/'
     })
 
     res.cookie('refresh_token', data.access.refresh_token, {
       httpOnly: true,
-      sameSite: isProd ? 'none' : 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      secure: isProd,
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/'
     })
