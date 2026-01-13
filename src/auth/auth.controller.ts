@@ -34,7 +34,7 @@ export class AuthController {
 
     res.cookie('access_token', data.access.access_token, {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: isProd ? 'none' : 'lax',
       secure: isProd,
       maxAge: 24 * 60 * 60 *  1000,
       path: '/'
@@ -42,7 +42,7 @@ export class AuthController {
 
     res.cookie('refresh_token', data.access.refresh_token, {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: isProd ? 'none' : 'lax',
       secure: isProd,
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/'
@@ -58,7 +58,7 @@ export class AuthController {
 
   @Post('logout')
   logout(
-    @Res() req: Request,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @UserId() userId: string
   ) {

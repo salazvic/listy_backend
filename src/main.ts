@@ -9,8 +9,10 @@ import { SocketAdapter } from './sockets/socket.adapter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3001
-const server = app.getHttpAdapter().getInstance()
+  const server = app.getHttpAdapter().getInstance()
 
+  server.set('trust proxy', 1)
+  
   app.use(helmet());
   app.useGlobalPipes(
     new ValidationPipe({
@@ -26,7 +28,6 @@ const server = app.getHttpAdapter().getInstance()
   })
   app.use(cookieParser());
   app.useWebSocketAdapter(new SocketAdapter(app))
-  server.set('trust proxy', 1)
 
   process.on('uncaughtException', (err) => {
     console.log('UNCAUGHT EXCEPTION', err)
