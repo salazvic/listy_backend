@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Req, Res, UnauthorizedException, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, Post, Req, Res, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginDto, RegisterDto } from "./dto/auth.dto";
 import { Public } from "../decorator/public.decorator";
@@ -32,7 +32,7 @@ export class AuthController {
     const data = await this.authService.login(dto.email, dto.password);
     const isProd = process.env.NODE_ENV === 'production'
 
-    res.cookie('access_token', data.access.access_token, {
+    /* res.cookie('access_token', data.access.access_token, {
       httpOnly: true,
       sameSite: isProd ? 'none' : 'lax',
       secure: isProd,
@@ -50,7 +50,12 @@ export class AuthController {
       path: '/'
     })
 
-    return data
+    return data */
+    return {
+      access_token: data.access.access_token,
+      refresh_token: data.access.refresh_token,
+      user: data.user
+    }
   }
 
   @Delete('delete')
@@ -81,7 +86,7 @@ export class AuthController {
     return this.authService.logout(userId)
   }
 
-  @Public()
+  /* @Public()
   @Post('refresh')
   refresh(@Req() req, @Res({ passthrough: true }) res) {
     console.log('Cookies:', req.cookies)
@@ -105,6 +110,20 @@ export class AuthController {
     })
 
     return { ok: true }
+  } */
+
+  @Public()
+  @Post('refresh')
+  async refresh(
+    @Headers('authorization') authHeader: string
+  ) {
+    if(!authHeader) {
+      throw new UnauthorizedException('No refresh token')
+    }
+
+    const refreshToken = authHeader.replace('Bearer ', '')
+
+    return this.authService.refresh(refreshToken)
   }
 
   @Get('me')

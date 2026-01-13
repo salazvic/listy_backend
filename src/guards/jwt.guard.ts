@@ -25,7 +25,9 @@ export class JwtGuard implements CanActivate{
     if(isPublic) return true
 
     const req = context.switchToHttp().getRequest()
-    const token = req.cookies?.access_token
+    //const token = req.cookies?.access_token
+    const token = this.extractTokenFromHeader(req) ||
+      this.extractTokenFromCookie(req);
 
     if(!token) {
       throw new UnauthorizedException('No token')
@@ -39,5 +41,17 @@ export class JwtGuard implements CanActivate{
       this.logger.error(error)
       throw new UnauthorizedException('Token invalido o expirado')
     }
+  }
+
+  private extractTokenFromHeader(req: any): string | null {
+    const authHeader = req.headers?.authorization;
+    if (!authHeader) return null;
+
+    const [type, token] = authHeader.split(' ');
+    return type === 'Bearer' && token ? token : null;
+  }
+
+  private extractTokenFromCookie(req: any): string | null {
+    return req.cookies?.access_token ?? null;
   }
 }
