@@ -36,6 +36,7 @@ export class AuthController {
       httpOnly: true,
       sameSite: isProd ? 'none' : 'lax',
       secure: isProd,
+      domain: '.up.railway.app',
       maxAge: 24 * 60 * 60 *  1000,
       path: '/'
     })
@@ -44,6 +45,7 @@ export class AuthController {
       httpOnly: true,
       sameSite: isProd ? 'none' : 'lax',
       secure: isProd,
+      domain: '.up.railway.app',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/'
     })
