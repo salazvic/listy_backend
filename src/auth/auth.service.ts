@@ -138,6 +138,7 @@ export class AuthService {
       where: { id: userId },
       data: { refreshToken: null },
     });
+    return {ok: true}
   }
 
   async getMe(userId: string) {
