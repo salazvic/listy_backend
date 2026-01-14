@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { PinoLogger } from "nestjs-pino";
-import { Socket } from "socket.io";
+import { Socket } from "socket.io"; 
 
 @Injectable()
 export class WsJwtGuard implements CanActivate {
@@ -19,12 +19,13 @@ export class WsJwtGuard implements CanActivate {
 
     try {
       const payload = this.jwtService.verify(token)
-      client.data.user(payload)
+      client.data.user = payload
+      client.data.userId = payload.sub
 
       return true
     } catch (error) {
       this.logger.error('Token ws invalido')
-      throw new UnauthorizedException('Yoken WS invalido')
+      throw new UnauthorizedException('Token WS invalido')
     }
   }
 }

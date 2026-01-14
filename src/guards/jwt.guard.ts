@@ -15,7 +15,7 @@ export class JwtGuard implements CanActivate{
     private readonly logger: PinoLogger,
     private readonly reflector: Reflector
   ) {}
-
+ 
   canActivate(context: ExecutionContext): boolean {
     const isPublic = this.reflector.getAllAndOverride<boolean>(
       'isPublic',

@@ -16,9 +16,7 @@ export abstract class BaseGateway {
   afterInit(server: Server) {
     server.use((client: Socket, next) => {
       try {
-        const rawCookies = client.handshake.headers.cookie || ""
-        const parsed = cookie.parse(rawCookies)
-        const token = parsed["access_token"]
+        const token = client.handshake.auth?.token || ""
 
         if(!token) throw new Error("No token ws")
 
@@ -36,12 +34,13 @@ export abstract class BaseGateway {
   }
 
   handleConnection(client: Socket) {
-    console.log('✅ Socket conectado:', client.id);
-    console.log('👤 User:', client.data.user.sub);
-
-    if (client.data.userId) {
-      this.joinUserRoom(client, client.data.userId);
+    if (!client.data?.userId) {
+      client.disconnect()
+      return
     }
+
+    this.logger.info(`Socket conectado ${client.id} user ${client.data.userId}`)
+    this.joinUserRoom(client, client.data.userId);
   }
 
   protected joinListRoom(client: Socket, listId: string) {
