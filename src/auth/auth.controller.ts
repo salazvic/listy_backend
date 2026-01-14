@@ -123,6 +123,8 @@ export class AuthController {
 
     const refreshToken = authHeader.replace('Bearer ', '')
 
+    console.log("REFRESHTOKEN:", refreshToken)
+
     return this.authService.refresh(refreshToken)
   }
 
