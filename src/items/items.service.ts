@@ -25,10 +25,11 @@ export class ItemsService {
         imagePublicId: uploaded.publicId
       }
     }
+    const nameItem = data.name.toLowerCase()
 
     const newItem = await this.prisma.item.create({
       data: {
-        name: data.name,
+        name: nameItem,
         ...imageData,
       }
     })
