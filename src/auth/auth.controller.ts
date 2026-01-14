@@ -1,10 +1,19 @@
-import { Body, Controller, Delete, Get, Headers, Post, Req, Res, UnauthorizedException } from "@nestjs/common";
+import { 
+  Body, 
+  Controller, 
+  Delete, 
+  Get,  
+  Post, 
+  Req, 
+  Res, 
+  UnauthorizedException 
+} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginDto, RegisterDto } from "./dto/auth.dto";
 import { Public } from "../decorator/public.decorator";
 import { UserId } from "../decorator/user-id.decorator";
-import type { Response } from "express";
-import { Logger, PinoLogger } from "nestjs-pino";
+import type { Response, Request } from "express";
+import { PinoLogger } from "nestjs-pino";
 import { JwtService } from "@nestjs/jwt";
 import { MailService } from "src/mail/mail.service";
 
@@ -29,33 +38,11 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response
   ) {
-    const data = await this.authService.login(dto.email, dto.password);
-    const isProd = process.env.NODE_ENV === 'production'
+    const {user, access} = await this.authService.login(dto.email, dto.password);
 
-    /* res.cookie('access_token', data.access.access_token, {
-      httpOnly: true,
-      sameSite: isProd ? 'none' : 'lax',
-      secure: isProd,
-      domain: '.up.railway.app',
-      maxAge: 24 * 60 * 60 *  1000,
-      path: '/'
-    })
-
-    res.cookie('refresh_token', data.access.refresh_token, {
-      httpOnly: true,
-      sameSite: isProd ? 'none' : 'lax',
-      secure: isProd,
-      domain: '.up.railway.app',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/'
-    })
-
-    return data */
-    return {
-      access_token: data.access.access_token,
-      refresh_token: data.access.refresh_token,
-      user: data.user
-    }
+    this.setAuthCookies(res, access)
+    return user
+    
   }
 
   @Delete('delete')
@@ -65,24 +52,10 @@ export class AuthController {
 
   @Post('logout')
   logout(
-    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @UserId() userId: string
   ) {
-    res.clearCookie('access_token', {
-      httpOnly: true,
-      sameSite: 'none',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/'
-    })
-
-    res.clearCookie('refresh_token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      path: '/'
-    })
-
+    this.clearAuthCookies(res)
     return this.authService.logout(userId)
   }
 
@@ -115,54 +88,64 @@ export class AuthController {
   @Public()
   @Post('refresh')
   async refresh(
-    @Headers('authorization') authHeader: string
+    @Req() req: Request,
+    @Res({ passthrough: true}) res: Response
   ) {
-    if(!authHeader) {
+    const refreshToken = req.cookies?.refresh_token
+    if(!refreshToken) {
       throw new UnauthorizedException('No refresh token')
     }
 
-    const refreshToken = authHeader.replace('Bearer ', '')
+    const tokens = await this.authService.refresh(refreshToken)
+    this.setAuthCookies(res, tokens)
 
-    console.log("REFRESHTOKEN:", refreshToken)
-
-    return this.authService.refresh(refreshToken)
+    return {ok: true}
   }
 
   @Get('me')
-  async me(@Req() req) {
-    console.log('Cookies:', req.cookies)
-    const user = req.user
-    if (!user) {
+  async me(@Req() req: any) {
+    if (!req.user) {
       throw new UnauthorizedException
     }
-    const respBack = await this.authService.getMe(user.sub)
-    console.log("resp back:", respBack)
-    return respBack
+    return this.authService.getMe(req.user.sub)
   }
 
-  /* @Post('invite')
-  async inviteUSer(@Body('email') emailData: any ) {
-    // TODO: ENDPOINT PARA USAR CON RESEND NO ESTA EN USO AHORA
-    return this.mail.sendEmail({
-      to: emailData?.email,
-      subject: `Te invitaron a la lista ${emailData?.listName}`,
-      html:`
-        <h2>${emailData?.userName} te invito a una lista</h2>
-        <p>Te invitaron a colaborar en la lista <b>${emailData?.listName}</b>.</p>
-        <a href="${process.env.ORIGIN}/register" style="
-          display:inline-block;
-          padding:10px 16px;
-          background:#000;
-          color:#fff;
-          text-decoration:none;
-          border-radius:6px;
-        ">
-          Aceptar invitación
-        </a>
-        <p style="margin-top:20px;color:#666">
-          Si no esperabas este correo, ignoralo.
-        </p>
-      `
+  private setAuthCookies(res: Response, tokens: any) {
+    const isProd = process.env.NODE_ENV === 'production'
+
+    res.cookie('access_token', tokens.access_token, {
+      httpOnly: true,
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd,
+      path: '/',
+      maxAge: 15 * 60 * 1000
     })
-  } */
+
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd,
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    })
+  }
+
+  private clearAuthCookies(res: Response) {
+    const isProd = process.env.NODE_ENV === 'production'
+
+    res.cookie('access_token', {
+      httpOnly: true,
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd,
+      path: '/',
+    })
+
+    res.cookie('refresh_token', {
+      httpOnly: true,
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd,
+      path: '/',
+    })
+  }
+
 }

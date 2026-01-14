@@ -11,7 +11,6 @@ import { PinoLogger } from 'nestjs-pino';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersGateway } from 'src/sockets/gateway/users.gateway';
-import { access } from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -32,27 +31,26 @@ export class AuthService {
       ...data,
       password: hash,
     });
+
     this.userGateway.emitUserProfile({
       id: user.id,
       name: user.name,
       email: user.email
     })
-    return this.generateTokens(user.id, user.name);
+    return user
   }
 
   async login(email: string, password: string) {
-    const emailLower = email.toLowerCase()
-    const user = await this.userService.findByEmail(emailLower);
+    const user = await this.userService.findByEmail(email.toLowerCase());
     if (!user) throw new UnauthorizedException('Usuario no encontrado');
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) throw new UnauthorizedException('Contraseña invalida');
 
     const tokens = await this.generateTokens(user.id, user.name);
-
-    await this.updateRefreshToken(user.id, (await tokens).refresh_token);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
     
-    return {
+    return { 
       access: {
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token
@@ -63,6 +61,57 @@ export class AuthService {
         email: user.email
       }
     };
+  }
+
+  async logout(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
+    return {ok: true}
+  }
+
+  async getMe(userId: string) {
+    return this.prisma.user.findUnique({
+      where: {id: userId},
+      select: {
+        id: true,
+        name: true,
+        email: true
+      }
+    })
+  }
+
+  async refresh(refreshToken: string) {
+    let payload: any
+
+    try {
+      payload = await this.jwtService.verifyAsync(
+        refreshToken,
+        { secret: process.env.JWT_SECRET}
+      )
+    } catch (error) {
+      throw new UnauthorizedException('Refresh token invalido')
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: {id: payload.sub}
+    })
+
+    if(!user || !user.refreshToken) {
+      throw new UnauthorizedException()
+    }
+
+    const isValid = await bcrypt.compare(refreshToken, user.refreshToken)
+    if (!isValid) throw new ForbiddenException()
+
+    const tokens = await this.generateTokens(user.id, user.name)
+    await this.updateRefreshToken(user.id, tokens.refresh_token)
+
+    return {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token
+    }
   }
 
   async deleteUSer(id: string) {
@@ -93,63 +142,6 @@ export class AuthService {
     ]);
 
     return { access_token, refresh_token}
-  }
-
-  /* async refreshToken(userId: string, refreshToken: string) {
-    const user = await this.prisma.user.findUnique({ where: {id: userId} });
-
-    if(!user || !user.refreshToken) {
-      throw new ForbiddenException()
-    }
-
-    const isValid = await bcrypt.compare(
-      refreshToken,
-      user.refreshToken
-    )
-
-    if(isValid) throw new ForbiddenException()
-
-    const tokens = await this.generateTokens(user.id, user.name)
-
-    await this.updateRefreshToken(user.id, tokens.refresh_token);
-
-    return tokens
-  } */
-
-  async refresh(refreshToken: string) {
-    const payload = await this.jwtService.verifyAsync(
-      refreshToken,
-      { secret: process.env.JWT_SECRET}
-    )
-
-    const user = await this.userService.findById(payload.sub)
-    if(!user) throw new UnauthorizedException()
-
-    const tokens = await this.generateTokens(user.id, user.name)
-
-    return {
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token
-    }
-  }
-
-  async logout(userId: string) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
-    });
-    return {ok: true}
-  }
-
-  async getMe(userId: string) {
-    return this.prisma.user.findUnique({
-      where: {id: userId},
-      select: {
-        id: true,
-        name: true,
-        email: true
-      }
-    })
   }
 
 }

@@ -13,7 +13,11 @@ async function bootstrap() {
 
   server.set('trust proxy', 1)
   
-  app.use(helmet());
+  app.use(helmet({
+      crossOriginResourcePolicy: false,
+    })
+  );
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -21,17 +25,20 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
   app.enableCors({
-    origin: process.env.ORIGIN,
+    origin: process.env.ORIGIN?.split(','),
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
   })
+
   app.use(cookieParser());
   app.useWebSocketAdapter(new SocketAdapter(app))
 
   process.on('uncaughtException', (err) => {
     console.log('UNCAUGHT EXCEPTION', err)
   })
+  
   process.on('unhandledRejection', (reason) => {
     console.log('UNHANDLED EXCEPTION', reason)
   })

@@ -16,9 +16,12 @@ export abstract class BaseGateway {
   afterInit(server: Server) {
     server.use((client: Socket, next) => {
       try {
-        const token = client.handshake.auth?.token || ""
+        const rawCookies = client.handshake.headers.cookie
+        if(!rawCookies) throw new Error("No cookies")
 
-        if(!token) throw new Error("No token ws")
+        const cookies = cookie.parse(rawCookies)
+        const token = cookies.access_token
+        if(!token) throw new Error("No access_token")
 
         const payload = this.jwtService.verify(token)
 
@@ -39,7 +42,7 @@ export abstract class BaseGateway {
       return
     }
 
-    this.logger.info(`Socket conectado ${client.id} user ${client.data.userId}`)
+    this.logger.info(`[SOCKET] conectado ${client.id} user ${client.data.userId}`)
     this.joinUserRoom(client, client.data.userId);
   }
 
@@ -52,7 +55,7 @@ export abstract class BaseGateway {
   protected leaveListRoom(client: Socket, listId: string) {
     const room = this.listRoom(listId);
     client.leave(room);
-    this.logger.info(`[SOCKET] ${client.id} left list ${room}`)
+    this.logger.info(`[SOCKET][LIST] ${client.id} left list ${room}`)
   }
 
   protected joinUserRoom(client: Socket, userId: string) {

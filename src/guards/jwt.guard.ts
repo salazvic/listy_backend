@@ -19,31 +19,22 @@ export class JwtGuard implements CanActivate{
   canActivate(context: ExecutionContext): boolean {
     const isPublic = this.reflector.getAllAndOverride<boolean>(
       'isPublic',
-      [context.getHandler(), context.getClass()]
+      [context.getHandler(), context.getClass()] 
     )
 
     if(isPublic) return true
 
     const req = context.switchToHttp().getRequest()
-    //const token = req.cookies?.access_token
 
-    let token: string | undefined
-
-    const authHeader = req.headers['authorization']
-    if(authHeader?.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1]
-    }
-
-    if(!token && req.cookies?.access_token) {
-      token = req.cookies.access_token
-    }
-
+    const token = req.cookies?.access_token
     if(!token) {
-      throw new UnauthorizedException('No token')
+      throw new UnauthorizedException('No access token')
     }
 
     try {
-      const payload = this.jwtService.verify(token)
+      const payload = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET
+      })
       req.user = payload
       return true
     } catch (error) {
