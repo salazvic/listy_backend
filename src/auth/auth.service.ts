@@ -129,7 +129,7 @@ export class AuthService {
 
     return {
       access_token: tokens.access_token,
-      refreshToken: tokens.refresh_token
+      refresh_token: tokens.refresh_token
     }
   }
 
