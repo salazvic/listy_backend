@@ -9,7 +9,7 @@ export const UserId = createParamDecorator(
 
     if(ctx.getType() === 'ws') {
       const client = ctx.switchToWs().getClient()
-      return client.data?.user?.sub || client.data?.user?.userId
+      return client.user?.sub || client.user?.userId
     }
 
     return null
