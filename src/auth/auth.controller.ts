@@ -38,11 +38,7 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response
   ) {
-    const {user, access} = await this.authService.login(dto.email, dto.password);
-
-    this.setAuthCookies(res, access)
-    return user
-    
+    return this.authService.login(dto.email, dto.password);    
   }
 
   @Delete('delete')
@@ -59,47 +55,17 @@ export class AuthController {
     return this.authService.logout(userId)
   }
 
-  /* @Public()
-  @Post('refresh')
-  refresh(@Req() req, @Res({ passthrough: true }) res) {
-    console.log('Cookies:', req.cookies)
-    const refreshToken = req.cookies.refresh_token
-    if (!refreshToken) throw new UnauthorizedException()
-
-    const payload = this.jwt.verify(refreshToken, {
-      secret: process.env.JWT_REFRESH_SECRET
-    })
-
-    const newAccess = this.jwt.sign(
-      { sub: payload.sub, name: payload.name },
-      { expiresIn: '15m' }
-    )
-
-    res.cookie('access_token', newAccess, {
-      httpOnly: true,
-      sameSite: 'none',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/'
-    })
-
-    return { ok: true }
-  } */
 
   @Public()
   @Post('refresh')
   async refresh(
-    @Req() req: Request,
-    @Res({ passthrough: true}) res: Response
+    @Body('refresh_token') refreshToken: string
   ) {
-    const refreshToken = req.cookies?.refresh_token
     if(!refreshToken) {
       throw new UnauthorizedException('No refresh token')
     }
 
-    const tokens = await this.authService.refresh(refreshToken)
-    this.setAuthCookies(res, tokens)
-
-    return {ok: true}
+    return this.authService.refresh(refreshToken)
   }
 
   @Get('me')

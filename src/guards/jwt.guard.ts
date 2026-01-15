@@ -26,10 +26,12 @@ export class JwtGuard implements CanActivate{
 
     const req = context.switchToHttp().getRequest()
 
-    const token = req.cookies?.access_token
-    if(!token) {
+    const authHeader = req.headers.authorization
+    if(!authHeader?.startsWith('Bearer ')) {
       throw new UnauthorizedException('No access token')
     }
+
+    const token = authHeader.split(' ')[1]
 
     try {
       const payload = this.jwtService.verify(token, {

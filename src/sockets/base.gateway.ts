@@ -16,14 +16,12 @@ export abstract class BaseGateway {
   afterInit(server: Server) {
     server.use((client: Socket, next) => {
       try {
-        const rawCookies = client.handshake.headers.cookie
-        if(!rawCookies) throw new Error("No cookies")
-
-        const cookies = cookie.parse(rawCookies)
-        const token = cookies.access_token
+        const token = client.handshake.auth?.token
         if(!token) throw new Error("No access_token")
 
-        const payload = this.jwtService.verify(token)
+        const payload = this.jwtService.verify(token, {
+          secret: process.env.JWT_SECRET
+        })
 
         client.data.userId = payload.sub
         client.data.user = payload

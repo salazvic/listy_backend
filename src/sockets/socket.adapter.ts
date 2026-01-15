@@ -2,7 +2,6 @@ import { INestApplicationContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Server, ServerOptions } from 'socket.io';
-import cookie from 'cookie'
 
 export class SocketAdapter extends IoAdapter {
   constructor(private app: INestApplicationContext) {
@@ -23,11 +22,7 @@ export class SocketAdapter extends IoAdapter {
 
     server.use((socket, next) => {
       try {
-        const rawCookie = socket.handshake.headers.cookie
-        if(!rawCookie) throw new Error('No cookies')
-
-        const parsed = cookie.parse(rawCookie)
-        const token = parsed.access_token
+        const token = socket.handshake.auth?.token
         if(!token) throw new Error('No access token')
 
         const payload = jwtService.verify(token, {
