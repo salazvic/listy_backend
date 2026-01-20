@@ -16,14 +16,6 @@ export class ListsGateway extends BaseGateway {
   constructor(logger: PinoLogger, jwtService: JwtService) {
     super(logger, jwtService) 
   }
-
-  handleConnection(client: Socket) {
-    const userId = client.data.userId
-    if(userId) {
-      client.join(`user:${userId}`)
-      this.logger.info(`[SOCKET][LIST] ${client.id} joined user:${userId}`)
-    }
-  }
   
   @SubscribeMessage(Events.LIST_JOIN)
   handleJoinList(

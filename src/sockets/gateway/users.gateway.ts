@@ -17,11 +17,6 @@ export class UsersGateway extends BaseGateway {
     super(logger, jwtService)
   }
 
-  /* handleConnection(client: Socket) {
-    const userId = client.data.userId 
-    this.joinUserRoom(client, userId)
-  } */
-
   @SubscribeMessage(Events.USER_CONNECTED)
   handleJoinList(
     @ConnectedSocket() client: Socket, 

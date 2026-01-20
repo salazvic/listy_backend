@@ -2,7 +2,6 @@ import { JwtService } from "@nestjs/jwt";
 import { WebSocketServer } from "@nestjs/websockets";
 import { PinoLogger } from "nestjs-pino";
 import { Server, Socket } from "socket.io";
-import cookie from "cookie"
 
 export abstract class BaseGateway {
   @WebSocketServer()
@@ -13,7 +12,7 @@ export abstract class BaseGateway {
     protected readonly jwtService: JwtService
   ) {}
 
-  afterInit(server: Server) {
+  /* afterInit(server: Server) {
     server.use((client: Socket, next) => {
       try {
         const token = client.handshake.auth?.token
@@ -32,7 +31,7 @@ export abstract class BaseGateway {
         next(new Error("Unauthorized"))
       }
     })
-  }
+  } */
 
   handleConnection(client: Socket) {
     if (!client.data?.userId) {

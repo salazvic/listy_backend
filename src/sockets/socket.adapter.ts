@@ -22,10 +22,17 @@ export class SocketAdapter extends IoAdapter {
 
     server.use((socket, next) => {
       try {
-        const token = socket.handshake.auth?.token
-        if(!token) throw new Error('No access token')
+        const cookie = socket.handshake.headers.cookie
+        if(!cookie) throw new Error('No cookie')
 
-        const payload = jwtService.verify(token, {
+        const accessToken = cookie
+        .split('; ')
+        .find(c => c.startsWith('access_token='))
+        ?.split('=')[1]
+
+        if (!accessToken) throw new Error('No access token')
+
+        const payload = jwtService.verify(accessToken, {
           secret: process.env.JWT_SECRET
         })
 

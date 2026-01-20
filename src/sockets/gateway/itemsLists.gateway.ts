@@ -17,14 +17,6 @@ export class ItemsListsGateway extends BaseGateway{
     super(logger, jwtService)
   }
 
-  handleConnection(client: Socket) {
-    const userId = client.data.userId
-    if(userId) {
-      client.join(`user:${userId}`)
-      this.logger.info(`[SOCKET][ITEM_LIST] ${client.id} joined user:${userId}`)
-    }
-  }
-
   @SubscribeMessage(Events.LIST_JOIN)
   handleJoinList(
     @ConnectedSocket() client: Socket, 
