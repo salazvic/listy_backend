@@ -25,6 +25,7 @@ export class ListController {
   getLists(
     @UserId() ownerId: string
   ){
+    console.log("BFF lists llego al controller")
     return this.listsService.getUserLists(ownerId)
   }
 

@@ -27,6 +27,7 @@ export class ListsService {
   }
 
   async getUserLists(ownerId: string) {
+    console.log("llego al service")
     const list = await this.prisma.list.findMany({
       where: {ownerId},
       orderBy: {
