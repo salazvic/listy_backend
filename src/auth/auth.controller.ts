@@ -59,8 +59,10 @@ export class AuthController {
   @Public()
   @Post('refresh')
   async refresh(
-    @Body('refresh_token') refreshToken: string
+    @Req() req: Request
   ) {
+    const refreshToken = req.cookies?.refresh_token
+    
     if(!refreshToken) {
       throw new UnauthorizedException('No refresh token')
     }
